@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DDD22 - Sistema de Desempenho</title>
+  <style>
+    :root {
+      --bg-color: #0e1615;
+      --highlight: #f7b733;
+      --accent: #fc4a1a;
+      --green: #00ff00;
+      --red: #ff0000;
+      --card-blue: #1a5276;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: white;
+    }
+    .page {
+      display: none;
+      padding: 2rem;
+      animation: fadeIn 0.5s ease-in-out forwards;
+    }
+    .active {
+      display: block;
+    }
+    .btn {
+      background: linear-gradient(to right, var(--highlight), var(--accent));
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      margin: 5px;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px rgba(247, 183, 51, 0.5);
+    }
+    .btn-secondary {
+      background: #2c3e50;
+    }
+    .cards {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+      justify-content: center;
+    }
+    .card {
+      background: linear-gradient(135deg, var(--card-blue), #154360);
+      width: 120px;
+      height: 160px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      padding: 10px;
+    }
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(247, 183, 51, 0.7);
+    }
+    .card-score {
+      font-size: 1.8rem;
+      margin-top: 10px;
+      color: var(--highlight);
+    }
+    .checklist, .extra {
+      margin-top: 1rem;
+      background: #1a2a28;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .checklist h3, .extra h3 {
+      color: var(--highlight);
+      border-bottom: 1px solid #2c3e50;
+      padding-bottom: 5px;
+    }
+    .checklist label, .extra label {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+    .checklist input, .extra input {
+      margin-right: 10px;
+      transform: scale(1.2);
+    }
+    .status {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      margin: 20px 0;
+      background: #1a2a28;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .overall {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--highlight);
+    }
+    #rankingResumo {
+      margin-top: 2rem;
+      background: #1a2a28;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    #rankingResumo h3 {
+      margin-bottom: 0.5rem;
+      color: var(--highlight);
+    }
+    #rankingList {
+      list-style: none;
+      padding: 0;
+    }
+    #rankingList li {
+      background-color: #2c3e50;
+      margin: 0.5rem 0;
+      padding: 0.8rem;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    #rankingList li span:first-child {
+      font-weight: bold;
+    }
+    #rankingList li span:last-child {
+      color: var(--highlight);
+    }
+    .chart-container {
+      margin-top: 20px;
+      background: #1a2a28;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .admin-section {
+      background: #1a2a28;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .date-picker {
+      margin: 15px 0;
+    }
+    .date-picker input {
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+      background: #2c3e50;
+      color: white;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 600px) {
+      .cards {
+        grid-template-columns: 1fr 1fr;
+      }
+      .status {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="page1" class="page active">
+    <h2>DDD22</h2>
+    <h1>Sistema de Desempenho</h1>
+    <button class="btn" onclick="goToPage(2)">Avaliar Funcionários</button>
+    <button class="btn" onclick="goToPage(4)">Área Administrativa</button>
+    <div class="chart-container">
+      <canvas id="graficoGeral" width="400" height="200"></canvas>
+    </div>
+  </div>
+
+  <div id="page2" class="page">
+    <h2>AVALIAÇÃO DE FUNCIONÁRIOS</h2>
+    <div class="date-picker">
+      <label for="dataAvaliacao">Data da avaliação:</label>
+      <input type="date" id="dataAvaliacao">
+    </div>
+    <div class="cards">
+      <div class="card" onclick="selectUser('ARTHUR')">
+        <div>ARTHUR</div>
+        <div class="card-score" id="score-ARTHUR">0</div>
+      </div>
+      <div class="card" onclick="selectUser('GABRIEL')">
+        <div>GABRIEL</div>
+        <div class="card-score" id="score-GABRIEL">0</div>
+      </div>
+      <div class="card" onclick="selectUser('LEVI')">
+        <div>LEVI</div>
+        <div class="card-score" id="score-LEVI">0</div>
+      </div>
+      <div class="card" onclick="selectUser('WESLLEN')">
+        <div>WESLLEN</div>
+        <div class="card-score" id="score-WESLLEN">0</div>
+      </div>
+    </div>
+    <div id="rankingResumo">
+      <h3>Ranking Geral</h3>
+      <ul id="rankingList"></ul>
+      <div class="chart-container">
+        <canvas id="graficoRanking" width="400" height="200"></canvas>
+      </div>
+    </div>
+    <button class="btn btn-secondary" onclick="goToPage(1)">Voltar</button>
+  </div>
+
+  <div id="page3" class="page">
+    <h2 id="nomeSelecionado">ARTHUR</h2>
+    <div class="date-display" id="dataSelecionada"></div>
+    
+    <div class="checklist">
+      <h3>Checklist Diário</h3>
+      <label><input type="checkbox" class="chk"> Banheiro</label>
+      <label><input type="checkbox" class="chk"> Salão</label>
+      <label><input type="checkbox" class="chk"> Guardanapeira</label>
+      <label><input type="checkbox" class="chk"> Mesas</label>
+      <label><input type="checkbox" class="chk"> Lixeiras</label>
+      <label><input type="checkbox" class="chk"> Talheres</label>
+      <label><input type="checkbox" class="chk"> 2º Andar</label>
+      <label><input type="checkbox" class="chk"> Vassoura</label>
+    </div>
+    
+    <div class="extra">
+      <h3>Avaliação Adicional</h3>
+      <label><input type="radio" name="praca" value="sim"> Praça limpa ✅</label>
+      <label><input type="radio" name="praca" value="nao"> Praça suja ❌</label>
+
+      <label><input type="radio" name="extras" value="sim"> Atividades extras realizadas ✅</label>
+      <label><input type="radio" name="extras" value="nao"> Sem atividades extras ❌</label>
+
+      <label><input type="radio" name="confrontos" value="sim"> Houve confrontos ❌</label>
+      <label><input type="radio" name="confrontos" value="nao"> Sem confrontos ✅</label>
+    </div>
+    
+    <div class="status">
+      <span>DESEMPENHO:</span>
+      <span id="overall" class="overall">0</span>
+    </div>
+    
+    <button class="btn" onclick="calcularOverall()">Calcular Desempenho</button>
+    <button class="btn btn-secondary" onclick="goToPage(2)">Voltar</button>
+    <button class="btn" onclick="salvarAvaliacao()">Salvar Avaliação</button>
+  </div>
+
+  <div id="page4" class="page">
+    <h2>ÁREA ADMINISTRATIVA</h2>
+    
+    <div class="admin-section">
+      <h3>Histórico Completo</h3>
+      <div class="date-picker">
+        <label for="dataInicio">De:</label>
+        <input type="date" id="dataInicio">
+        <label for="dataFim">Até:</label>
+        <input type="date" id="dataFim">
+        <button class="btn" onclick="filtrarHistorico()">Filtrar</button>
+      </div>
+      <div id="adminPanel"></div>
+    </div>
+    
+    <div class="admin-section">
+      <h3>Relatórios</h3>
+      <button class="btn" onclick="gerarRelatorioMensal()">Relatório Mensal</button>
+      <button class="btn" onclick="exportarDados()">Exportar Dados</button>
+    </div>
+    
+    <button class="btn btn-secondary" onclick="goToPage(1)">Voltar</button>
+  </div>
+
+  <script>
+    // Dados do sistema
+    const rankingData = {};
+    const historicoCheckins = {};
+    const rankingMensal = {};
+    let avaliacaoAtual = {};
+    let usuarioAtual = '';
+    let dataAtual = new Date().toISOString().split('T')[0];
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+      carregarDados();
+      document.getElementById('dataAvaliacao').valueAsDate = new Date();
+      document.getElementById('dataInicio').valueAsDate = new Date();
+      document.getElementById('dataFim').valueAsDate = new Date();
+      atualizarCards();
+    });
+
+    function goToPage(n) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page' + n).classList.add('active');
+      
+      if (n === 2) {
+        renderRanking();
+        document.getElementById('dataAvaliacao').valueAsDate = new Date();
+      }
+      if (n === 4) renderAdminPanel();
+    }
+
+    function selectUser(nome) {
+      goToPage(3);
+      usuarioAtual = nome;
+      document.getElementById('nomeSelecionado').innerText = nome;
+      
+      // Obter data selecionada
+      const dataInput = document.getElementById('dataAvaliacao');
+      dataAtual = dataInput.value ? dataInput.value : new Date().toISOString().split('T')[0];
+      document.getElementById('dataSelecionada').innerText = `Data: ${formatarData(dataAtual)}`;
+      
+      // Carregar avaliação existente se houver
+      carregarAvaliacaoExistente(nome, dataAtual);
+    }
+
+    function carregarAvaliacaoExistente(nome, data) {
+      if (historicoCheckins[nome]) {
+        const avaliacao = historicoCheckins[nome].find(item => item.dia === data);
+        if (avaliacao) {
+          // Preencher checklist
+          const checkboxes = document.querySelectorAll('.chk');
+          checkboxes.forEach((chk, index) => {
+            chk.checked = avaliacao.checklist && avaliacao.checklist[index];
+          });
+          
+          // Preencher radios
+          if (avaliacao.praca) document.querySelector(`input[name="praca"][value="${avaliacao.praca}"]`).checked = true;
+          if (avaliacao.extras) document.querySelector(`input[name="extras"][value="${avaliacao.extras}"]`).checked = true;
+          if (avaliacao.confrontos) document.querySelector(`input[name="confrontos"][value="${avaliacao.confrontos}"]`).checked = true;
+          
+          document.getElementById('overall').innerText = avaliacao.overall;
+        } else {
+          // Limpar campos se não houver avaliação para esta data
+          limparCamposAvaliacao();
+        }
+      } else {
+        limparCamposAvaliacao();
+      }
+    }
+
+    function limparCamposAvaliacao() {
+      document.querySelectorAll('.chk').forEach(chk => chk.checked = false);
+      document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+      document.getElementById('overall').innerText = '0';
+    }
+
+    function calcularOverall() {
+      let pontos = 0;
+      const checklist = document.querySelectorAll('.chk');
+      const checklistStatus = [];
+      
+      checklist.forEach(chk => {
+        if (chk.checked) pontos += 100;
+        checklistStatus.push(chk.checked);
+      });
+
+      const praca = document.querySelector('input[name="praca"]:checked');
+      if (praca) {
+        pontos += praca.value === 'sim' ? 100 : -50;
+      }
+
+      const extras = document.querySelector('input[name="extras"]:checked');
+      if (extras) {
+        pontos += extras.value === 'sim' ? 60 : 0;
+      }
+
+      const confronto = document.querySelector('input[name="confrontos"]:checked');
+      if (confronto) {
+        pontos += confronto.value === 'sim' ? -100 : 0;
+      }
+
+      const overall = Math.max(0, Math.min(100, Math.round((pontos / 10) * 10) / 10));
+      document.getElementById('overall').innerText = overall;
+
+      // Salvar dados temporários
+      avaliacaoAtual = {
+        checklist: checklistStatus,
+        praca: praca ? praca.value : null,
+        extras: extras ? extras.value : null,
+        confrontos: confronto ? confronto.value : null,
+        overall: overall
+      };
+    }
+
+    function salvarAvaliacao() {
+      if (!usuarioAtual || !dataAtual) return;
+      
+      const overall = parseFloat(document.getElementById('overall').innerText);
+      if (isNaN(overall)) {
+        alert('Calcule o desempenho antes de salvar!');
+        return;
+      }
+
+      // Atualizar ranking mensal
+      if (!rankingMensal[dataAtual]) rankingMensal[dataAtual] = {};
+      rankingMensal[dataAtual][usuarioAtual] = overall;
+
+      // Atualizar ranking geral
+      rankingData[usuarioAtual] = calcularMediaMensal(usuarioAtual);
+
+      // Atualizar histórico
+      if (!historicoCheckins[usuarioAtual]) historicoCheckins[usuarioAtual] = [];
+      
+      // Verificar se já existe avaliação para esta data
+      const index = historicoCheckins[usuarioAtual].findIndex(item => item.dia === dataAtual);
+      if (index >= 0) {
+        historicoCheckins[usuarioAtual][index] = {
+          ...avaliacaoAtual,
+          dia: dataAtual
+        };
+      } else {
+        historicoCheckins[usuarioAtual].push({
+          ...avaliacaoAtual,
+          dia: dataAtual
+        });
+      }
+
+      saveData();
+      atualizarCards();
+      alert('Avaliação salva com sucesso!');
+      goToPage(2);
+    }
+
+    function calcularMediaMensal(nome) {
+      let total = 0, count = 0;
+      for (let dia in rankingMensal) {
+        if (rankingMensal[dia][nome] != null) {
+          total += rankingMensal[dia][nome];
+          count++;
+        }
+      }
+      return count > 0 ? parseFloat((total / count).toFixed(1)) : 0;
+    }
+
+    function renderRanking() {
+      const ul = document.getElementById('rankingList');
+      ul.innerHTML = '';
+      const sorted = Object.entries(rankingData).sort((a, b) => b[1] - a[1]);
+      
+      sorted.forEach(([nome, score]) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${nome}</span> <span>${score}</span>`;
+        ul.appendChild(li);
+      });
+      
+      renderChart(sorted);
+    }
+
+    function renderChart(sortedData) {
+      const ctx = document.getElementById('graficoRanking').getContext('2d');
+      if (window.rankingChart) window.rankingChart.destroy();
+      
+      window.rankingChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sortedData.map(([nome]) => nome),
+          datasets: [{
+            label: 'Desempenho Médio',
+            data: sortedData.map(([_, score]) => score),
+            backgroundColor: 'rgba(247, 183, 51, 0.7)',
+            borderColor: 'rgba(247, 183, 51, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: { 
+            y: { 
+              beginAtZero: true, 
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.parsed.y + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function atualizarCards() {
+      Object.entries(rankingData).forEach(([nome, score]) => {
+        const cardScore = document.getElementById(`score-${nome}`);
+        if (cardScore) {
+          cardScore.textContent = score;
+          // Atualizar cor baseada no desempenho
+          if (score >= 80) {
+            cardScore.style.color = '#00ff00'; // Verde
+          } else if (score >= 50) {
+            cardScore.style.color = '#f7b733'; // Amarelo
+          } else {
+            cardScore.style.color = '#ff0000'; // Vermelho
+          }
+        }
+      });
+    }
+
+    function renderAdminPanel() {
+      const panel = document.getElementById('adminPanel');
+      panel.innerHTML = '';
+      
+      // Histórico por funcionário
+      Object.keys(historicoCheckins).forEach(nome => {
+        const section = document.createElement('div');
+        section.className = 'admin-section';
+        section.innerHTML = `<h4>${nome}</h4><ul>`;
+        
+        const historico = historicoCheckins[nome]
+          .sort((a, b) => new Date(b.dia) - new Date(a.dia))
+          .slice(0, 5); // Mostrar apenas os 5 mais recentes
+        
+        historico.forEach(item => {
+          section.innerHTML += `
+            <li>
+              ${formatarData(item.dia)}: ${item.overall}%
+              <button class="btn" onclick="editarAvaliacao('${nome}', '${item.dia}')">Editar</button>
+            </li>
+          `;
+        });
+        
+        section.innerHTML += `</ul>`;
+        panel.appendChild(section);
+      });
+    }
+
+    function filtrarHistorico() {
+      const dataInicio = document.getElementById('dataInicio').value;
+      const dataFim = document.getElementById('dataFim').value;
+      
+      if (!dataInicio || !dataFim) {
+        alert('Selecione ambas as datas para filtrar');
+        return;
+      }
+      
+      const panel = document.getElementById('adminPanel');
+      panel.innerHTML = '<h4>Resultados do Filtro</h4><ul>';
+      
+      Object.keys(historicoCheckins).forEach(nome => {
+        historicoCheckins[nome].forEach(item => {
+          if (item.dia >= dataInicio && item.dia <= dataFim) {
+            panel.innerHTML += `
+              <li>
+                ${nome} - ${formatarData(item.dia)}: ${item.overall}%
+              </li>
+            `;
+          }
+        });
+      });
+      
+      panel.innerHTML += '</ul>';
+    }
+
+    function editarAvaliacao(nome, data) {
+      usuarioAtual = nome;
+      dataAtual = data;
+      document.getElementById('dataAvaliacao').value = data;
+      selectUser(nome);
+      goToPage(3);
+    }
+
+    function gerarRelatorioMensal() {
+      const mesAtual = new Date().toISOString().slice(0, 7);
+      let relatorio = `Relatório Mensal - ${mesAtual}\n\n`;
+      
+      Object.keys(rankingData).forEach(nome => {
+        relatorio += `${nome}: ${rankingData[nome]}%\n`;
+        
+        // Adicionar detalhes das avaliações deste mês
+        if (historicoCheckins[nome]) {
+          historicoCheckins[nome]
+            .filter(item => item.dia.startsWith(mesAtual))
+            .forEach(item => {
+              relatorio += `  ${item.dia}: ${item.overall}%\n`;
+            });
+        }
+        
+        relatorio += '\n';
+      });
+      
+      alert(relatorio);
+    }
+
+    function exportarDados() {
+      const data = {
+        rankingData,
+        historicoCheckins,
+        rankingMensal
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `dados_desempenho_${new Date().toISOString().slice(0,10)}.json`;
+      link.click();
+    }
+
+    function formatarData(dataStr) {
+      const [ano, mes, dia] = dataStr.split('-');
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    // Armazenamento local
+    function saveData() {
+      localStorage.setItem('ddd22_rankingData', JSON.stringify(rankingData));
+      localStorage.setItem('ddd22_historicoCheckins', JSON.stringify(historicoCheckins));
+      localStorage.setItem('ddd22_rankingMensal', JSON.stringify(rankingMensal));
+    }
+
+    function carregarDados() {
+      const rd = localStorage.getItem('ddd22_rankingData');
+      const hc = localStorage.getItem('ddd22_historicoCheckins');
+      const rm = localStorage.getItem('ddd22_rankingMensal');
+      
+      if (rd) Object.assign(rankingData, JSON.parse(rd));
+      if (hc) Object.assign(historicoCheckins, JSON.parse(hc));
+      if (rm) Object.assign(rankingMensal, JSON.parse(rm));
+    }
+  </script>
+</body>
+</html>
