@@ -6,45 +6,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DDD22 - Sistema de Desempenho</title>
   <style>
+    @font-face {
+      font-family: 'Trip Sans';
+      src: url('https://fonts.cdnfonts.com/css/trip-sans') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+    
     :root {
-      --bg-color: #0e1615;
-      --highlight: #f7b733;
-      --accent: #fc4a1a;
-      --green: #00ff00;
-      --red: #ff0000;
-      --card-blue: #1a5276;
+      --bg-color: #F8C009;
+      --highlight: #000000;
+      --accent: #1A0000;
+      --card-blue: #000000;
+      --text-bg: rgba(0, 0, 0, 0.1);
     }
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Trip Sans', sans-serif;
       background-color: var(--bg-color);
-      color: white;
+      color: var(--accent);
     }
     .page {
       display: none;
       padding: 2rem;
       animation: fadeIn 0.5s ease-in-out forwards;
     }
+    h1, h2, h3, h4 {
+      position: relative;
+      display: inline-block;
+      padding: 0 8px;
+    }
+    h1::after, h2::after, h3::after, h4::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 60%;
+      background-color: var(--text-bg);
+      z-index: -1;
+      transform: skewX(-15deg);
+    }
     .active {
       display: block;
+      animation: pulse 0.5s ease-in-out;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.98); opacity: 0.8; }
+      50% { transform: scale(1.01); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
     }
     .btn {
-      background: linear-gradient(to right, var(--highlight), var(--accent));
+      background: var(--highlight);
       border: none;
-      padding: 10px 20px;
-      color: white;
-      font-weight: bold;
+      padding: 12px 28px;
+      color: #F8C009;
+      font-weight: 600;
       cursor: pointer;
-      border-radius: 10px;
-      transition: all 0.3s ease;
-      margin: 5px;
+      border-radius: 30px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      margin: 8px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
     }
     .btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 10px rgba(247, 183, 51, 0.5);
+      background: #4a0b0b;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transform: translateY(-2px);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255,255,255,0.5);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%, -50%);
+      transform-origin: 50% 50%;
+    }
+    .btn:focus:not(:active)::after {
+      animation: ripple 1s ease-out;
     }
     .btn-secondary {
-      background: #2c3e50;
+      background: #000000;
+      color: #F8C009;
+    }
+    @keyframes ripple {
+      0% {
+        transform: scale(0, 0);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(20, 20);
+        opacity: 0;
+      }
     }
     .cards {
       display: flex;
@@ -54,7 +119,7 @@
       justify-content: center;
     }
     .card {
-      background: linear-gradient(135deg, var(--card-blue), #154360);
+      background: var(--card-blue);
       width: 120px;
       height: 160px;
       text-align: center;
@@ -63,16 +128,32 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: white;
-      font-weight: bold;
-      border-radius: 10px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      padding: 10px;
+      color: #F8C009;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      padding: 12px;
+      border: none;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(248,192,9,0.1) 0%, transparent 70%);
+      z-index: 0;
     }
     .card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px rgba(247, 183, 51, 0.7);
+      transform: translateY(-5px);
+      box-shadow: 0 7px 14px rgba(0,0,0,0.25);
+    }
+    .card:active {
+      transform: translateY(-2px);
     }
     .card-score {
       font-size: 1.8rem;
@@ -81,9 +162,23 @@
     }
     .checklist, .extra {
       margin-top: 1rem;
-      background: #1a2a28;
+      background: #5D0E0E;
       padding: 15px;
-      border-radius: 10px;
+      border-radius: 15px 0 15px 0;
+      position: relative;
+      overflow: hidden;
+      color: #FFD700;
+      border: 2px solid #3D0000;
+    }
+    .checklist::before, .extra::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50px;
+      height: 50px;
+      background: radial-gradient(circle at 100% 0%, rgba(255,215,0,0.3) 0%, transparent 70%);
+      border-bottom-left-radius: 50px;
     }
     .checklist h3, .extra h3 {
       color: var(--highlight);
@@ -116,9 +211,10 @@
     }
     #rankingResumo {
       margin-top: 2rem;
-      background: #1a2a28;
+      background: #000000;
       padding: 15px;
       border-radius: 10px;
+      color: #F8C009;
     }
     #rankingResumo h3 {
       margin-bottom: 0.5rem;
@@ -149,20 +245,23 @@
       border-radius: 10px;
     }
     .admin-section {
-      background: #1a2a28;
+      background: #000000;
       padding: 15px;
       border-radius: 10px;
       margin-bottom: 20px;
+      color: #F8C009;
     }
     .date-picker {
       margin: 15px 0;
+      color: #F8C009;
     }
     .date-picker input {
       padding: 8px;
       border-radius: 5px;
       border: none;
-      background: #2c3e50;
-      color: white;
+      background: #000000;
+      color: #F8C009;
+      border: 1px solid #F8C009;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
@@ -185,7 +284,7 @@
     <h1>Sistema de Desempenho</h1>
     <button class="btn" onclick="goToPage(2)">Avaliar Funcionários</button>
     <button class="btn" onclick="goToPage(4)">Área Administrativa</button>
-    <div class="chart-container">
+    <div class="chart-container" style="background-color: black;">
       <canvas id="graficoGeral" width="400" height="200"></canvas>
     </div>
   </div>
@@ -194,7 +293,7 @@
     <h2>AVALIAÇÃO DE FUNCIONÁRIOS</h2>
     <div class="date-picker">
       <label for="dataAvaliacao">Data da avaliação:</label>
-      <input type="date" id="dataAvaliacao">
+      <input type="date" id="dataAvaliacao" style="background-color: black; color: #F8C009; border: 1px solid #F8C009; padding: 8px; border-radius: 5px;">
     </div>
     <div class="cards">
       <div class="card" onclick="selectUser('ARTHUR')">
@@ -260,6 +359,7 @@
     <button class="btn" onclick="calcularOverall()">Calcular Desempenho</button>
     <button class="btn btn-secondary" onclick="goToPage(2)">Voltar</button>
     <button class="btn" onclick="salvarAvaliacao()">Salvar Avaliação</button>
+    <button class="btn" onclick="adicionarNota()">Adicionar Nota</button>
   </div>
 
   <div id="page4" class="page">
@@ -281,6 +381,11 @@
       <h3>Relatórios</h3>
       <button class="btn" onclick="gerarRelatorioMensal()">Relatório Mensal</button>
       <button class="btn" onclick="exportarDados()">Exportar Dados</button>
+      <button class="btn" onclick="gerarCertificado(prompt('Nome do funcionário:'))">Gerar Certificado</button>
+      <button class="btn" onclick="compararFuncionarios(
+        prompt('Primeiro funcionário:'), 
+        prompt('Segundo funcionário:')
+      )">Comparar Funcionários</button>
     </div>
     
     <button class="btn btn-secondary" onclick="goToPage(1)">Voltar</button>
@@ -473,30 +578,60 @@
           datasets: [{
             label: 'Desempenho Médio',
             data: sortedData.map(([_, score]) => score),
-            backgroundColor: 'rgba(247, 183, 51, 0.7)',
-            borderColor: 'rgba(247, 183, 51, 1)',
-            borderWidth: 1
+            backgroundColor: '#F8C009',
+            borderColor: '#000000',
+            borderWidth: 2,
+            borderRadius: 6,
+            hoverBackgroundColor: '#000000',
+            hoverBorderColor: '#F8C009'
           }]
         },
         options: {
           responsive: true,
-          scales: { 
-            y: { 
-              beginAtZero: true, 
-              max: 100,
-              ticks: {
-                callback: function(value) {
-                  return value + '%';
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#F8C009',
+                font: {
+                  family: 'Trip Sans',
+                  size: 14
                 }
               }
-            }
-          },
-          plugins: {
+            },
             tooltip: {
+              backgroundColor: '#000000',
+              titleColor: '#F8C009',
+              bodyColor: '#F8C009',
+              borderColor: '#F8C009',
+              borderWidth: 1,
               callbacks: {
                 label: function(context) {
                   return context.parsed.y + '%';
                 }
+              }
+            }
+          },
+          scales: { 
+            y: { 
+              beginAtZero: true, 
+              max: 100,
+              grid: {
+                color: 'rgba(248, 192, 9, 0.2)'
+              },
+              ticks: {
+                color: '#F8C009',
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: '#F8C009'
               }
             }
           }
@@ -604,6 +739,63 @@
       });
       
       alert(relatorio);
+    }
+
+    // Add notes to evaluations
+    function adicionarNota() {
+      const nota = prompt("Adicionar nota/comentário:");
+      if (nota) {
+        avaliacaoAtual.nota = nota;
+        alert("Nota adicionada com sucesso!");
+      }
+    }
+
+    // Track attendance
+    function registrarPresenca(nome, presente = true) {
+      if (!rankingMensal[dataAtual]) rankingMensal[dataAtual] = {};
+      rankingMensal[dataAtual][`${nome}_presenca`] = presente;
+      saveData();
+      alert(`Presença de ${nome} registrada: ${presente ? '✅ Presente' : '❌ Ausente'}`);
+    }
+
+    // Set performance goals
+    function definirMeta(nome, meta) {
+      if (!rankingData[nome]) rankingData[nome] = 0;
+      rankingData[`${nome}_meta`] = meta;
+      saveData();
+      alert(`Meta definida para ${nome}: ${meta}%`);
+    }
+
+    // Generate performance certificate
+    function gerarCertificado(nome) {
+      const score = rankingData[nome] || 0;
+      const certificado = `
+        ==============================
+        CERTIFICADO DE DESEMPENHO
+        ==============================
+        
+        Funcionário: ${nome}
+        Desempenho Médio: ${score}%
+        Data: ${new Date().toLocaleDateString()}
+        
+        Parabéns pelo seu desempenho!
+        ==============================
+      `;
+      alert(certificado);
+    }
+
+    // Compare employees
+    function compararFuncionarios(func1, func2) {
+      const score1 = rankingData[func1] || 0;
+      const score2 = rankingData[func2] || 0;
+      
+      alert(`
+        COMPARAÇÃO DE DESEMPENHO:
+        --------------------------
+        ${func1}: ${score1}%
+        ${func2}: ${score2}%
+        Diferença: ${Math.abs(score1 - score2)}%
+      `);
     }
 
     function exportarDados() {
